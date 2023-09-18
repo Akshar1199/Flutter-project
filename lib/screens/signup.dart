@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../reusable_code/reusable.dart';
 import '../utils/color_utils.dart';
 import 'home.dart';
@@ -77,7 +78,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   //   }
   // }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,17 +122,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                firebaseUIButton(context, "Sign Up",() {
+                firebaseUIButton(context, "Sign Up", () {
                   FirebaseAuth.instance
                       .createUserWithEmailAndPassword(
                           email: _emailTextController.text,
                           password: _passwordTextController.text)
                       .then((value) {
                     print("Created New Account");
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()));
-                  }).onError((error, stackTrace) {
+                    Get.toNamed('/home');
+                  }).catchError((error) {
                     print("Error ${error.toString()}");
+                    if (error.toString().contains("email-already-in-use")) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              "User already exists with this email address."),
+                        ),
+                      );
+                    }
                   });
                 })
               ],

@@ -1,3 +1,4 @@
+import 'package:auth/screens/Add_question.dart';
 import 'package:auth/screens/home.dart';
 import 'package:auth/screens/profile.dart';
 import 'package:auth/screens/signin.dart';
@@ -24,12 +25,13 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/signin', // Set the initial route
+      initialRoute: '/signin',
       getPages: [
         GetPage(name: '/signin', page: () => SignInScreen()),
         GetPage(name: '/signup', page: () => SignUpScreen()),
         GetPage(name: '/home', page: () => HomeScreen()),
         GetPage(name: '/profile', page: () => ProfileScreen()),
+        GetPage(name: '/Addquestion', page: () => AddQuestionScreen()),
       ],
     );
   }

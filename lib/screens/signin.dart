@@ -156,7 +156,7 @@ class _SignInScreenState extends State<SignInScreen> {
             style: TextStyle(color: Colors.white70)),
         GestureDetector(
           onTap: () {
-            Get.toNamed('/home');
+            Get.toNamed('/signup');
           },
           child: const Text(
             " Sign Up",

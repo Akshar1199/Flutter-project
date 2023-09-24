@@ -1,3 +1,4 @@
+import 'package:auth/screens/Add_question.dart';
 import 'package:auth/screens/common_bottom_navigation_bar.dart';
 import 'package:auth/screens/custom_fab.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -65,8 +66,17 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         profilePhotoUrl: profilePhotoUrl,
       ),
-      floatingActionButton:
-          CustomFloatingActionButton(), // No onPressed needed here
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddQuestionScreen(),
+            ),
+          );
+        },
+        child: Icon(Icons.add), // You can change the icon to your preference
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }

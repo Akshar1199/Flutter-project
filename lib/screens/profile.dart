@@ -111,6 +111,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .collection("users")
         .doc(userId)
         .collection("images")
+        .get()
+        .then((querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        doc.reference.delete().catchError((error) {
+          print("Error deleting photo: $error");
+        });
+      });
+      showSnackBar("All Images Deleted", Duration(seconds: 2));
+    }).catchError((error) {
+      print("Error querying photos: $error");
+    });
+
+    await firebaseFirestore
+        .collection("users")
+        .doc(userId)
+        .collection("images")
         .add({'downloadURL': downloadURL}).whenComplete(
             () => showSnackBar("Image Uploaded", Duration(seconds: 2)));
 

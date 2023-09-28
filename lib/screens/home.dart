@@ -1,10 +1,12 @@
 import 'package:auth/screens/Add_question.dart';
+import 'package:auth/screens/QuestionDetailPage.dart';
 import 'package:auth/screens/common_bottom_navigation_bar.dart';
 import 'package:auth/screens/custom_fab.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:auth/screens/signin.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../reusable_code/reusable.dart';
 import 'profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,9 +21,17 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  int _currentPage = 1;
+  int _questionsPerPage = 8;
+  int _totalPages = 1;
+
+  List<DocumentSnapshot> questions = [];
+  List<DocumentSnapshot> allquestions = [];
+
   @override
   void initState() {
     _loadUserData();
+    _fetchQuestions();
   }
 
   String profilePhotoUrl = '';
@@ -32,21 +42,153 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _fetchQuestions() async {
+    final questionData = await fetchQuestions();
+    allquestions = questionData;
+    setState(() {
+      final start = (_currentPage - 1) * _questionsPerPage;
+      final end = start + _questionsPerPage;
+
+      if (end > allquestions.length) {
+        questions = allquestions.sublist(start, (allquestions.length));
+      } else {
+        questions = allquestions.sublist(start, end);
+      }
+      _totalPages = (allquestions.length / _questionsPerPage).ceil();
+    });
+  }
+
+  Future<void> _setquestions() async {
+    setState(() {
+      final start = (_currentPage - 1) * _questionsPerPage;
+      final end = start + _questionsPerPage;
+      if (end > allquestions.length) {
+        questions = allquestions.sublist(start, (allquestions.length));
+      } else {
+        questions = allquestions.sublist(start, end);
+      }
+    });
+  }
+
+  Future<List<DocumentSnapshot>> fetchQuestions() async {
+    final QuerySnapshot questionSnapshot =
+        await FirebaseFirestore.instance.collection('questions').get();
+    return questionSnapshot.docs;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: CustomAppBar(
-        title: 'Home',
+        title: 'All Questions',
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Welcome to the Home Screen!',
-              style: TextStyle(fontSize: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: questions.length,
+                itemBuilder: (context, index) {
+                  final question = questions[index];
+                  final title = question['title'];
+                  final details = question['details'];
+
+                  return GestureDetector(
+                    onTap: () async {
+                      final questionData =
+                          question.data() as Map<String, dynamic>;
+                      final questionObject = Question(
+                        title: questionData['title'],
+                        details: questionData['details'],
+                        userId: questionData['userId'],
+                      );
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => QuestionDetailPage(
+                            question:
+                                questionObject, // Pass the converted Question object
+                          ),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      elevation: 4,
+                      margin: EdgeInsets.all(10),
+                      child: ListTile(
+                        title: Text(title),
+                        subtitle: Text(details),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
+            Container(
+              padding: EdgeInsets.only(bottom: 5),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_currentPage > 1)
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_currentPage > 1) {
+                            setState(() {
+                              _currentPage--;
+                            });
+                            _setquestions();
+                          }
+                        },
+                        child: Text('Previous Page'),
+                      ),
+                    SizedBox(width: 16),
+                    if (_currentPage < _totalPages)
+                      ElevatedButton(
+                        onPressed: () {
+                          if (allquestions.length -
+                                  (_currentPage * _questionsPerPage) >
+                              0) {
+                            setState(() {
+                              _currentPage++;
+                            });
+                            _setquestions();
+                            print(
+                                "Next Page Button Clicked. Current Page: $_currentPage");
+                          }
+                        },
+                        child: Text('Next Page'),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.only(bottom: 23),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 16),
+                    for (int i = 1; i <= _totalPages; i++)
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _currentPage = i;
+                          });
+                          _setquestions();
+                        },
+                        child: Text('$i'),
+                      ),
+                  ],
+                ),
+              ),
+            )
           ],
         ),
       ),
@@ -67,11 +209,13 @@ class _HomeScreenState extends State<HomeScreen> {
         profilePhotoUrl: profilePhotoUrl,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddQuestionScreen(),
+              builder: (context) => AddQuestionScreen(
+                fetchQuestionsCallback: _fetchQuestions, // Pass the callback
+              ),
             ),
           );
         },
@@ -80,6 +224,18 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
+
+  // Widget _buildPageNumberBar() {
+  //   return Container(
+  //       padding:
+  //           EdgeInsets.only(bottom: 30), // Adjust the top padding as needed
+  //       child: Row(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           Text('Page $_currentPage of $_totalPages'),
+  //         ],
+  //       ));
+  // }
 }
 
       // // body: Center(

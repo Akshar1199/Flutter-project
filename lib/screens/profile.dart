@@ -97,6 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String userId = '';
   String email = '';
   String profilePhotoUrl = '';
+
   Future uploadImage() async {
     final imgId = DateTime.now().millisecondsSinceEpoch.toString();
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
@@ -118,7 +119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           print("Error deleting photo: $error");
         });
       });
-      showSnackBar("All Images Deleted", Duration(seconds: 2));
+      // showSnackBar("All Images Deleted", Duration(seconds: 2));
     }).catchError((error) {
       print("Error querying photos: $error");
     });
@@ -239,8 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         },
         profilePhotoUrl: profilePhotoUrl,
       ),
-      floatingActionButton:
-          CustomFloatingActionButton(), // No onPressed needed here
+      floatingActionButton: CustomFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }

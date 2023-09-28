@@ -1,5 +1,6 @@
 import 'package:auth/screens/Add_question.dart';
 import 'package:auth/screens/home.dart';
+import 'package:auth/screens/initialscreen.dart';
 import 'package:auth/screens/profile.dart';
 import 'package:auth/screens/signin.dart';
 import 'package:auth/screens/signup.dart';
@@ -20,18 +21,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // final QuestionController questionController = Get.put(QuestionController());
     return GetMaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/signin',
+      initialRoute: '/initial',
       getPages: [
+        GetPage(name: '/initial', page: () => IntialPage()),
         GetPage(name: '/signin', page: () => SignInScreen()),
         GetPage(name: '/signup', page: () => SignUpScreen()),
         GetPage(name: '/home', page: () => HomeScreen()),
         GetPage(name: '/profile', page: () => ProfileScreen()),
-        GetPage(name: '/Addquestion', page: () => AddQuestionScreen()),
+        GetPage(
+            name: '/Addquestion',
+            page: () => AddQuestionScreen(
+                  fetchQuestionsCallback: () {},
+                )),
       ],
     );
   }

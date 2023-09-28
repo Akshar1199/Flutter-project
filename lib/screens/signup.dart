@@ -3,9 +3,11 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../reusable_code/reusable.dart';
 import '../utils/color_utils.dart';
 import 'home.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
@@ -127,8 +129,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       .createUserWithEmailAndPassword(
                           email: _emailTextController.text,
                           password: _passwordTextController.text)
-                      .then((value) {
+                      .then((value) async {
+                    CollectionReference users =
+                        FirebaseFirestore.instance.collection('users');
+                    await users.doc(value.user!.uid).set({
+                      'username': _userNameTextController.text,
+                    });
                     print("Created New Account");
+                    String? tempurl;
+                    final prefs = await SharedPreferences.getInstance();
+                    prefs.setString('user_email', _emailTextController.text);
+                    prefs.setString('user_uid', value.user?.uid ?? '');
+                    prefs.setString(
+                        'user_profile_photo_url',
+                        tempurl ??
+                            'https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png');
                     Get.toNamed('/home');
                   }).catchError((error) {
                     print("Error ${error.toString()}");
@@ -137,6 +152,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         SnackBar(
                           content: Text(
                               "User already exists with this email address."),
+                        ),
+                      );
+                    } else if (error.toString().contains("weak-password")) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            "Password should be at least 6 characters.",
+                          ),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            "An error occurred: ${error.toString()}",
+                          ),
                         ),
                       );
                     }

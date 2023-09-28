@@ -1,8 +1,13 @@
+// import 'package:auth/screens/QuestionController.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:auth/screens/home.dart';
 
 class AddQuestionScreen extends StatefulWidget {
+  final VoidCallback fetchQuestionsCallback;
+  AddQuestionScreen({required this.fetchQuestionsCallback});
   @override
   _AddQuestionScreenState createState() => _AddQuestionScreenState();
 }
@@ -43,8 +48,8 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
   final TextEditingController detailsController = TextEditingController();
   final TextEditingController triedController = TextEditingController();
   final TextEditingController expectedController = TextEditingController();
-  bool isDetailsEnabled = false; // Track if details should be enabled
-  bool isTriedEnabled = false; // Track if "What did you try?" should be enabled
+  bool isDetailsEnabled = false;
+  bool isTriedEnabled = false;
 
   void initState() {
     _loadUserData();
@@ -62,7 +67,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
       final question = Question(
         title: titleController.text,
         details: detailsController.text,
-        userId: userid, // Replace with the actual user ID
+        userId: userid,
         tried: triedController.text,
         expected: expectedController.text,
       );
@@ -71,7 +76,9 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
           FirebaseFirestore.instance.collection('questions');
       await questionsCollection.add(question.toMap());
 
-      Navigator.pop(context); // Close the form screen
+      Navigator.pop(context);
+
+      widget.fetchQuestionsCallback();
     }
   }
 
@@ -90,7 +97,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
             children: [
               TextFormField(
                 controller: titleController,
-                decoration: InputDecoration(labelText: 'Title'),
+                decoration: InputDecoration(labelText: 'Title*'),
                 validator: (value) {
                   if (value!.isEmpty) {
                     return 'Please enter a title';
@@ -99,7 +106,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                 },
                 onChanged: (value) {
                   setState(() {
-                    // Enable the details field when the title is entered
                     isDetailsEnabled = value.isNotEmpty;
                   });
                 },
@@ -107,14 +113,10 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
               TextFormField(
                 controller: detailsController,
                 decoration: InputDecoration(
-                  labelText: 'Details',
-                  // Disable the details field when isDetailsEnabled is false
+                  labelText: 'What are the details of your problem?*',
                   enabled: isDetailsEnabled,
                 ),
                 validator: (value) {
-                  if (!isDetailsEnabled) {
-                    return 'Please enter a title first';
-                  }
                   if (value!.isEmpty) {
                     return 'Please enter details';
                   }
@@ -122,7 +124,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                 },
                 onChanged: (value) {
                   setState(() {
-                    // Enable the details field when the title is entered
                     isTriedEnabled = value.isNotEmpty;
                   });
                 },
@@ -131,13 +132,9 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                 controller: triedController,
                 decoration: InputDecoration(
                   labelText: 'What did you try?',
-                  // Disable the "What did you try?" field when isTriedEnabled is false
                   enabled: isTriedEnabled,
                 ),
                 validator: (value) {
-                  if (!isTriedEnabled) {
-                    return 'Please enter details first';
-                  }
                   return null;
                 },
               ),
@@ -148,9 +145,6 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
                   enabled: isTriedEnabled,
                 ),
                 validator: (value) {
-                  if (!isTriedEnabled) {
-                    return 'Please enter details first';
-                  }
                   return null;
                 },
               ),

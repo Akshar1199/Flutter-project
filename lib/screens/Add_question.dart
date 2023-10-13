@@ -1,9 +1,10 @@
-// import 'package:auth/screens/QuestionController.dart';
+// import 'package:Stackoverflow/screens/QuestionController.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:auth/screens/home.dart';
+import 'package:Stackoverflow/screens/home.dart';
+import 'package:uuid/uuid.dart';
 
 class AddQuestionScreen extends StatefulWidget {
   final VoidCallback fetchQuestionsCallback;
@@ -16,33 +17,43 @@ class Question {
   final String title;
   final String details;
   final String userId;
+  final String username;
   final List<String>? answers;
   final String? tried;
   final String? expected;
+  String? questionId;
+  int? upVote;
+  // String uid = Uuid().v4();
 
-  Question({
-    required this.title,
-    required this.details,
-    required this.userId,
-    this.answers,
-    this.tried,
-    this.expected,
-  });
+  Question(
+      {required this.title,
+      required this.details,
+      required this.userId,
+      required this.username,
+      this.answers,
+      this.upVote = 0,
+      this.tried,
+      this.expected,
+      this.questionId});
 
   Map<String, dynamic> toMap() {
     return {
       'title': title,
       'details': details,
       'userId': userId,
+      'username': username,
       'answers': answers,
       'tried': tried,
       'expected': expected,
+      'questionId': questionId,
+      'upVote': upVote,
     };
   }
 }
 
 class _AddQuestionScreenState extends State<AddQuestionScreen> {
   String userid = '';
+  String username = '';
   final _formKey = GlobalKey<FormState>();
   final TextEditingController titleController = TextEditingController();
   final TextEditingController detailsController = TextEditingController();
@@ -59,6 +70,7 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       userid = prefs.getString('user_uid') ?? '';
+      username = prefs.getString('user_username') ?? '';
     });
   }
 
@@ -68,14 +80,20 @@ class _AddQuestionScreenState extends State<AddQuestionScreen> {
         title: titleController.text,
         details: detailsController.text,
         userId: userid,
+        username: username,
         tried: triedController.text,
         expected: expectedController.text,
       );
 
       final questionsCollection =
           FirebaseFirestore.instance.collection('questions');
-      await questionsCollection.add(question.toMap());
+      final documentReference = await questionsCollection.add({
+        ...question.toMap(),
+        'questionId': '',
+      });
+      final questionId = documentReference.id;
 
+      await documentReference.update({'questionId': questionId});
       Navigator.pop(context);
 
       widget.fetchQuestionsCallback();

@@ -141,6 +141,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     prefs.setString('user_email', _emailTextController.text);
                     prefs.setString('user_uid', value.user?.uid ?? '');
                     prefs.setString(
+                        'user_username', _userNameTextController.text);
+
+                    prefs.setString(
                         'user_profile_photo_url',
                         tempurl ??
                             'https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png');

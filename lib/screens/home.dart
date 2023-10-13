@@ -1,9 +1,9 @@
-import 'package:auth/screens/Add_question.dart';
-import 'package:auth/screens/QuestionDetailPage.dart';
-import 'package:auth/screens/common_bottom_navigation_bar.dart';
-import 'package:auth/screens/custom_fab.dart';
+import 'package:Stackoverflow/screens/Add_question.dart';
+import 'package:Stackoverflow/screens/QuestionDetailPage.dart';
+import 'package:Stackoverflow/screens/common_bottom_navigation_bar.dart';
+import 'package:Stackoverflow/screens/custom_fab.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:auth/screens/signin.dart';
+import 'package:Stackoverflow/screens/signin.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -94,36 +94,104 @@ class _HomeScreenState extends State<HomeScreen> {
                   final question = questions[index];
                   final title = question['title'];
                   final details = question['details'];
+                  final qid = question['questionId'];
+                  final questionData = question.data() as Map<String, dynamic>;
+                  final username = questionData['username'];
+                  final upVote = questionData['upVote'];
+                  Future<void> updateupvotequestion(
+                      DocumentSnapshot question) async {
+                    final questionRef = FirebaseFirestore.instance
+                        .collection('questions')
+                        .doc(question['questionId']);
+                    int currentUpvotes = question['upVote'];
+
+                    await questionRef.update({
+                      'upVote': currentUpvotes + 1,
+                    });
+                    _fetchQuestions();
+                  }
+
+                  Future<void> updatedownvotequestion(
+                      DocumentSnapshot question) async {
+                    final questionRef = FirebaseFirestore.instance
+                        .collection('questions')
+                        .doc(question['questionId']);
+                    int currentUpvotes = question['upVote'];
+
+                    await questionRef.update({
+                      'upVote': currentUpvotes - 1,
+                    });
+                    _fetchQuestions();
+                  }
 
                   return GestureDetector(
-                    onTap: () async {
-                      final questionData =
-                          question.data() as Map<String, dynamic>;
-                      final questionObject = Question(
-                        title: questionData['title'],
-                        details: questionData['details'],
-                        userId: questionData['userId'],
-                      );
+                      onTap: () async {
+                        final questionObject = Question(
+                          title: questionData['title'],
+                          details: questionData['details'],
+                          userId: questionData['userId'],
+                          username: questionData['username'],
+                          questionId: questionData['questionId'],
+                        );
 
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => QuestionDetailPage(
-                            question:
-                                questionObject, // Pass the converted Question object
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => QuestionDetailPage(
+                              question: questionObject,
+                              fetchQuestionsCallback: _fetchQuestions,
+                            ),
                           ),
+                        );
+                      },
+                      child: Card(
+                        elevation: 4,
+                        margin: EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ListTile(
+                              title: Text(title),
+                              subtitle: Text(details),
+                              trailing: Text(
+                                'votes: $upVote',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(3.0),
+                              child: Text(
+                                '$username',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 16.0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      updateupvotequestion(questions[index]);
+                                    },
+                                    child: Text('Upvote Question'),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      right:
+                                          16.0), // Add space between Upvote and Downvote
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      updatedownvotequestion(questions[index]);
+                                    },
+                                    child: Text('Downvote Question'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                    child: Card(
-                      elevation: 4,
-                      margin: EdgeInsets.all(10),
-                      child: ListTile(
-                        title: Text(title),
-                        subtitle: Text(details),
-                      ),
-                    ),
-                  );
+                      ));
                 },
               ),
             ),

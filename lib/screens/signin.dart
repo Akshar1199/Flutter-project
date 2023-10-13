@@ -1,4 +1,4 @@
-import 'package:auth/screens/signup.dart';
+import 'package:Stackoverflow/screens/signup.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -85,7 +85,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     );
                     return;
                   }
-
+                  var temp;
                   FirebaseAuth.instance
                       .signInWithEmailAndPassword(
                     email: email,
@@ -100,7 +100,10 @@ class _SignInScreenState extends State<SignInScreen> {
                           .collection("images")
                           .limit(1)
                           .get();
-
+                      temp = await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(value.user?.uid ?? '')
+                          .get();
                       if (snapshot.docs.isNotEmpty) {
                         final firstDoc = snapshot.docs.first;
                         tempurl = firstDoc['downloadURL'];
@@ -113,6 +116,8 @@ class _SignInScreenState extends State<SignInScreen> {
                     final prefs = await SharedPreferences.getInstance();
                     prefs.setString('user_email', email);
                     prefs.setString('user_uid', value.user?.uid ?? '');
+                    prefs.setString('user_username', temp['username'] ?? '');
+
                     prefs.setString(
                         'user_profile_photo_url',
                         tempurl ??

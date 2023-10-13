@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:auth/screens/common_bottom_navigation_bar.dart';
-import 'package:auth/screens/custom_app_bar.dart';
-import 'package:auth/screens/custom_fab.dart';
-import 'package:auth/screens/home.dart';
+import 'package:Stackoverflow/screens/common_bottom_navigation_bar.dart';
+import 'package:Stackoverflow/screens/custom_app_bar.dart';
+import 'package:Stackoverflow/screens/custom_fab.dart';
+import 'package:Stackoverflow/screens/home.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -97,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String userId = '';
   String email = '';
   String profilePhotoUrl = '';
-
+  String username = '';
   Future uploadImage() async {
     final imgId = DateTime.now().millisecondsSinceEpoch.toString();
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
@@ -148,6 +148,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       email = prefs.getString('user_email') ?? '';
       userId = prefs.getString('user_uid') ?? '';
+      username = prefs.getString('user_username') ?? '';
+
       profilePhotoUrl = prefs.getString('user_profile_photo_url') ?? '';
     });
   }
@@ -220,6 +222,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SizedBox(height: 10),
           Text(
             'Email: $email',
+            style: TextStyle(fontSize: 20),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Username: $username',
             style: TextStyle(fontSize: 20),
           ),
         ],

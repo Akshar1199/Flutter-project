@@ -23,7 +23,7 @@ class CommonBottomNavigationBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: CircleAvatar(
-            backgroundImage: NetworkImage(profilePhotoUrl), // Use NetworkImage
+            backgroundImage: NetworkImage(profilePhotoUrl),
             radius: 15,
           ),
           label: 'Profile',

@@ -1,4 +1,6 @@
+import 'package:Stackoverflow/screens/About.dart';
 import 'package:Stackoverflow/screens/Add_question.dart';
+import 'package:Stackoverflow/screens/SearchScreen.dart';
 import 'package:Stackoverflow/screens/home.dart';
 import 'package:Stackoverflow/screens/initialscreen.dart';
 import 'package:Stackoverflow/screens/profile.dart';
@@ -39,6 +41,7 @@ class MyApp extends StatelessWidget {
             page: () => AddQuestionScreen(
                   fetchQuestionsCallback: () {},
                 )),
+        GetPage(name: '/about', page: () => AboutUsPage()),
       ],
     );
   }

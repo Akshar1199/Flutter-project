@@ -1,7 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class IntialPage extends StatelessWidget {
+class IntialPage extends StatefulWidget {
+  @override
+  _IntialPageState createState() => _IntialPageState();
+}
+
+class _IntialPageState extends State<IntialPage> {
+  @override
+  void initState() {
+    super.initState();
+    checkLoginStatus();
+  }
+
+  Future<void> checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('user_uid');
+
+    if (userId != null) {
+      Get.toNamed('/home');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -10,7 +31,6 @@ class IntialPage extends StatelessWidget {
         actions: <Widget>[
           TextButton(
             onPressed: () {
-              // Navigate to the login screen when the "Login" button in the app bar is pressed.
               Get.toNamed('/signin');
             },
             child: Text(
@@ -22,25 +42,23 @@ class IntialPage extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              // Navigate to the signup screen when the "Sign Up" button in the app bar is pressed.
               Get.toNamed('/signup');
             },
             child: Text(
               'Sign Up',
               style: TextStyle(
-                color: Colors.white, // Customize the button text color.
+                color: Colors.white, // Use Colors.white for white color
               ),
             ),
           ),
           TextButton(
             onPressed: () {
-              // Navigate to the login screen when the "Login" button in the app bar is pressed.
-              // Get.toNamed('/signin');
+              Get.toNamed('/about');
             },
             child: Text(
-              'About',
+              'Sign Up',
               style: TextStyle(
-                color: Colors.white, // Customize the button text color.
+                color: Colors.white, // Use Colors.white for white color
               ),
             ),
           ),

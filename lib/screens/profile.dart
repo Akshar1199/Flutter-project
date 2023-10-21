@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:Stackoverflow/screens/Add_question.dart';
+import 'package:Stackoverflow/screens/QuestionDetailPage.dart';
 import 'package:Stackoverflow/screens/common_bottom_navigation_bar.dart';
 import 'package:Stackoverflow/screens/custom_app_bar.dart';
 import 'package:Stackoverflow/screens/custom_fab.dart';
@@ -138,9 +140,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  List<DocumentSnapshot> questions = [];
+
+  Future<void> fetchUserQuestions() async {
+    final prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString('user_uid') ?? '';
+
+    final QuerySnapshot questionSnapshot = await FirebaseFirestore.instance
+        .collection('questions')
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    setState(() {
+      questions = questionSnapshot.docs;
+    });
+  }
+
   @override
   void initState() {
     _loadUserData();
+    fetchUserQuestions();
   }
 
   Future<void> _loadUserData() async {
@@ -219,15 +238,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: const Icon(Icons.add_a_photo_sharp),
                 label: const Text('UPLOAD IMAGE')),
           ),
-          SizedBox(height: 10),
-          Text(
-            'Email: $email',
-            style: TextStyle(fontSize: 20),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(
+                    left:
+                        10.0), // Add right-side padding of 10.0 logical pixels
+                child: Text(
+                  'Email: $email',
+                  style: TextStyle(fontSize: 20),
+                ),
+              ),
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(
+                    left:
+                        10.0), // Add right-side padding of 10.0 logical pixels
+                child: Text(
+                  'Username: $username',
+                  style: TextStyle(fontSize: 20),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 10),
-          Text(
-            'Username: $username',
-            style: TextStyle(fontSize: 20),
+          Expanded(
+            child: ListView.builder(
+              itemCount: questions.length,
+              itemBuilder: (context, index) {
+                final question = questions[index];
+                final title = question['title'];
+                final details = question['details'];
+                final questionData = question.data() as Map<String, dynamic>;
+
+                return GestureDetector(
+                  onTap: () async {
+                    final questionObject = Question(
+                      title: questionData['title'],
+                      details: questionData['details'],
+                      userId: questionData['userId'],
+                      username: questionData['username'],
+                      questionId: questionData['questionId'],
+                      tried: questionData['tried'],
+                      expected: questionData['expected'],
+                    );
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => QuestionDetailPage(
+                          question: questionObject,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Card(
+                    elevation: 4,
+                    margin: EdgeInsets.all(10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          title: Text(title),
+                          subtitle: Text(details),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

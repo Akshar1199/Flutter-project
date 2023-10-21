@@ -2,14 +2,15 @@ import 'package:Stackoverflow/screens/Add_question.dart';
 import 'package:Stackoverflow/screens/Answer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class QuestionDetailPage extends StatefulWidget {
   final Question question;
-  final VoidCallback fetchQuestionsCallback;
+  // final VoidCallback fetchQuestionsCallback;
 
-  QuestionDetailPage(
-      {required this.question, required this.fetchQuestionsCallback});
+  QuestionDetailPage({required this.question});
 
   @override
   _QuestionDetailPageState createState() => _QuestionDetailPageState();
@@ -33,6 +34,12 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
 
     setState(() {
       answers = fetchedAnswers;
+      // Sort answers by upvotes in descending order
+      answers.sort((a, b) {
+        final upvotesA = a['upvoteCount'] ?? 0;
+        final upvotesB = b['upvoteCount'] ?? 0;
+        return upvotesB.compareTo(upvotesA);
+      });
     });
   }
 
@@ -59,6 +66,10 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
               buildTextRow("Title:", widget.question.title),
               SizedBox(height: 8),
               buildTextRow("Details:", widget.question.details),
+              SizedBox(height: 8),
+              buildTextRow("Tried by user:", widget.question.tried ?? ""),
+              SizedBox(height: 8),
+              buildTextRow("Expected :", widget.question.expected ?? ""),
               SizedBox(height: 16),
               if (!isAddingAnswer)
                 ElevatedButton(

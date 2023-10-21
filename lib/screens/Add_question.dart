@@ -23,7 +23,6 @@ class Question {
   final String? expected;
   String? questionId;
   int? upVote;
-  // String uid = Uuid().v4();
 
   Question(
       {required this.title,

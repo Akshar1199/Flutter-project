@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../reusable_code/reusable.dart';
+import 'SearchScreen.dart';
 import 'profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './custom_app_bar.dart';
@@ -24,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentPage = 1;
   int _questionsPerPage = 8;
   int _totalPages = 1;
+  bool isSearching = false;
 
   List<DocumentSnapshot> questions = [];
   List<DocumentSnapshot> allquestions = [];
@@ -35,11 +37,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String profilePhotoUrl = '';
+
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       profilePhotoUrl = prefs.getString('user_profile_photo_url') ?? '';
     });
+  }
+
+  Future<void> deleteQuestion(String questionId, String userId) async {
+    final user = FirebaseAuth.instance.currentUser; // Get the current user
+    if (user != null && user.uid == userId) {
+      // The user can delete their own question
+      try {
+        await FirebaseFirestore.instance
+            .collection('questions')
+            .doc(questionId)
+            .delete();
+        print('Question deleted successfully');
+      } catch (e) {
+        print('Error deleting question: $e');
+      }
+    } else {
+      // Handle the case where the user is not authorized to delete the question.
+    }
   }
 
   Future<void> _fetchQuestions() async {
@@ -80,8 +101,22 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: CustomAppBar(
-        title: 'All Questions',
+      appBar: AppBar(
+        title: Text('All Questions'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      SearchScreen(allquestions, _fetchQuestions),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -97,7 +132,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   final qid = question['questionId'];
                   final questionData = question.data() as Map<String, dynamic>;
                   final username = questionData['username'];
-                  final upVote = questionData['upVote'];
+                  // final upVote = questionData['upVote'];
+
                   Future<void> updateupvotequestion(
                       DocumentSnapshot question) async {
                     final questionRef = FirebaseFirestore.instance
@@ -132,6 +168,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           userId: questionData['userId'],
                           username: questionData['username'],
                           questionId: questionData['questionId'],
+                          tried: questionData['tried'],
+                          expected: questionData['expected'],
                         );
 
                         Navigator.push(
@@ -139,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           MaterialPageRoute(
                             builder: (context) => QuestionDetailPage(
                               question: questionObject,
-                              fetchQuestionsCallback: _fetchQuestions,
+                              // fetchQuestionsCallback: _fetchQuestions,
                             ),
                           ),
                         );
@@ -153,10 +191,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             ListTile(
                               title: Text(title),
                               subtitle: Text(details),
-                              trailing: Text(
-                                'votes: $upVote',
-                                style: TextStyle(fontSize: 14),
-                              ),
+                              // trailing: Text(
+                              //   'votes: $upVote',
+                              //   style: TextStyle(fontSize: 14),
+                              // ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(3.0),
@@ -165,30 +203,29 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(fontSize: 14),
                               ),
                             ),
-                            Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 16.0),
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      updateupvotequestion(questions[index]);
-                                    },
-                                    child: Text('Upvote Question'),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      right:
-                                          16.0), // Add space between Upvote and Downvote
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      updatedownvotequestion(questions[index]);
-                                    },
-                                    child: Text('Downvote Question'),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            // Row(
+                            // children: [
+                            // Padding(
+                            //   padding: const EdgeInsets.only(right: 16.0),
+                            //   child: ElevatedButton(
+                            //     onPressed: () {
+                            //       updateupvotequestion(questions[index]);
+                            //     },
+                            //     child: Text('Upvote Question'),
+                            //   ),
+                            // ),
+                            // Padding(
+                            //   padding: const EdgeInsets.only(right: 16.0),
+                            //   // Add space between Upvote and Downvote
+                            //   child: ElevatedButton(
+                            //     onPressed: () {
+                            //       updatedownvotequestion(questions[index]);
+                            //     },
+                            //     child: Text('Downvote Question'),
+                            //   ),
+                            // ),
+                            // ],
+                            // ),
                           ],
                         ),
                       ));
@@ -196,7 +233,48 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Container(
-              padding: EdgeInsets.only(bottom: 5),
+              padding: EdgeInsets.only(bottom: 3),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(_totalPages, (index) {
+                    final page = index + 1;
+                    final isSelected = _currentPage == page;
+                    return Padding(
+                      padding: EdgeInsets.fromLTRB(
+                          8.0, 8.0, 8.0, 7.0), // Adjust the spacing
+                      child: ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _currentPage = page;
+                          });
+                          _setquestions();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          primary: isSelected ? Colors.black87 : Colors.blue,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 8.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                        ),
+                        child: Text(
+                          '$page',
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+            SizedBox(width: 23), // Add a SizedBox with a specific width
+            Container(
+              padding: EdgeInsets.only(bottom: 23),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -214,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         child: Text('Previous Page'),
                       ),
-                    SizedBox(width: 16),
+                    SizedBox(width: 16), // Add a SizedBox with a specific width
                     if (_currentPage < _totalPages)
                       ElevatedButton(
                         onPressed: () {
@@ -235,28 +313,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            Container(
-              padding: EdgeInsets.only(bottom: 23),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(width: 16),
-                    for (int i = 1; i <= _totalPages; i++)
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _currentPage = i;
-                          });
-                          _setquestions();
-                        },
-                        child: Text('$i'),
-                      ),
-                  ],
-                ),
-              ),
-            )
           ],
         ),
       ),
@@ -292,29 +348,4 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
-
-  // Widget _buildPageNumberBar() {
-  //   return Container(
-  //       padding:
-  //           EdgeInsets.only(bottom: 30), // Adjust the top padding as needed
-  //       child: Row(
-  //         mainAxisAlignment: MainAxisAlignment.center,
-  //         children: [
-  //           Text('Page $_currentPage of $_totalPages'),
-  //         ],
-  //       ));
-  // }
 }
-
-      // // body: Center(
-      // //   child: ElevatedButton(
-      // //     child: Text("Logout"),
-      // //     onPressed: () {
-      // //       FirebaseAuth.instance.signOut().then((value) {
-      // //         print("Signed Out");
-      // //         Navigator.push(context,
-      // //             MaterialPageRoute(builder: (context) => SignInScreen()));
-      // //       });
-      // //     },
-      // //   ),
-      // ),

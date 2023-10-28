@@ -55,6 +55,7 @@ class _QuestionDetailPageState extends State<QuestionDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Question Details'),
+        backgroundColor: Colors.deepPurpleAccent,
       ),
       body: Center(
         child: Padding(

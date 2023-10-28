@@ -28,6 +28,7 @@ class _IntialPageState extends State<IntialPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Welcome'),
+        backgroundColor: Colors.deepPurpleAccent,
         actions: <Widget>[
           TextButton(
             onPressed: () {
@@ -56,7 +57,7 @@ class _IntialPageState extends State<IntialPage> {
               Get.toNamed('/about');
             },
             child: Text(
-              'Sign Up',
+              'About',
               style: TextStyle(
                 color: Colors.white, // Use Colors.white for white color
               ),

@@ -103,6 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text('All Questions'),
+        backgroundColor: Colors.deepPurpleAccent,
         actions: [
           IconButton(
             icon: Icon(Icons.search),
@@ -133,6 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   final questionData = question.data() as Map<String, dynamic>;
                   final username = questionData['username'];
                   // final upVote = questionData['upVote'];
+
+                  Color cardBackgroundColor = Colors.black12;
 
                   Future<void> updateupvotequestion(
                       DocumentSnapshot question) async {
@@ -182,51 +185,28 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         );
                       },
-                      child: Card(
-                        elevation: 4,
-                        margin: EdgeInsets.all(10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ListTile(
-                              title: Text(title),
-                              subtitle: Text(details),
-                              // trailing: Text(
-                              //   'votes: $upVote',
-                              //   style: TextStyle(fontSize: 14),
-                              // ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(3.0),
-                              child: Text(
-                                '$username',
-                                style: TextStyle(fontSize: 14),
+                      child: Container(
+                        color:
+                            cardBackgroundColor, // Set the background color here
+                        child: Card(
+                          elevation: 4,
+                          margin: EdgeInsets.all(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ListTile(
+                                title: Text(title),
+                                subtitle: Text(details),
                               ),
-                            ),
-                            // Row(
-                            // children: [
-                            // Padding(
-                            //   padding: const EdgeInsets.only(right: 16.0),
-                            //   child: ElevatedButton(
-                            //     onPressed: () {
-                            //       updateupvotequestion(questions[index]);
-                            //     },
-                            //     child: Text('Upvote Question'),
-                            //   ),
-                            // ),
-                            // Padding(
-                            //   padding: const EdgeInsets.only(right: 16.0),
-                            //   // Add space between Upvote and Downvote
-                            //   child: ElevatedButton(
-                            //     onPressed: () {
-                            //       updatedownvotequestion(questions[index]);
-                            //     },
-                            //     child: Text('Downvote Question'),
-                            //   ),
-                            // ),
-                            // ],
-                            // ),
-                          ],
+                              Padding(
+                                padding: const EdgeInsets.all(3.0),
+                                child: Text(
+                                  '$username',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ));
                 },
@@ -252,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           _setquestions();
                         },
                         style: ElevatedButton.styleFrom(
-                          primary: isSelected ? Colors.black87 : Colors.blue,
+                          primary: isSelected ? Colors.white60 : Colors.deepPurpleAccent,
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.0, vertical: 8.0),
                           shape: RoundedRectangleBorder(
@@ -262,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Text(
                           '$page',
                           style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black,
+                            color: isSelected ? Colors.black : Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -291,6 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           }
                         },
                         child: Text('Previous Page'),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurpleAccent)
                       ),
                     SizedBox(width: 16), // Add a SizedBox with a specific width
                     if (_currentPage < _totalPages)
@@ -308,6 +289,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           }
                         },
                         child: Text('Next Page'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurpleAccent)
                       ),
                   ],
                 ),
@@ -344,6 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
         child: Icon(Icons.add), // You can change the icon to your preference
+        backgroundColor: Colors.indigoAccent,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );

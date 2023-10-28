@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'initialscreen.dart';
+
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
 
@@ -15,7 +17,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         prefs.remove('user_uid');
         prefs.remove('user_username');
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => SignInScreen()));
+            context, MaterialPageRoute(builder: (context) => IntialPage()));
       });
     } catch (e) {
       print('Error signing out: $e');
